@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão - Fluxo Administrativo-Pedagógico</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- HEADER / BARRA SUPERIOR -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Logo & Título -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-blue-500/20">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 leading-tight">Sistema de Gestão</h1>
+                    <p class="text-xs text-slate-500 font-medium">Fluxo Administrativo-Pedagógico • LGPD & RBAC Compliance</p>
+                </div>
+            </div>
+
+            <!-- Seletor de Perfil / Papel (RBAC) -->
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:inline">Perfil Ativo (RBAC):</span>
+                <div class="bg-slate-100 p-1 rounded-xl border border-slate-200 flex items-center gap-1">
+                    <button onclick="setRole('Estudante')" id="btn-role-Estudante" class="role-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        🎓 Estudante
+                    </button>
+                    <button onclick="setRole('Professor')" id="btn-role-Professor" class="role-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        👨‍🏫 Professor
+                    </button>
+                    <button onclick="setRole('Coordenação')" id="btn-role-Coordenação" class="role-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900">
+                        🛡️ Coordenação
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER INFORMATIVO RBAC -->
+    <div id="role-banner" class="bg-blue-50 border-b border-blue-100 px-4 py-2 text-xs text-blue-800 flex items-center justify-between max-w-7xl mx-auto w-full mt-2 rounded-lg">
+        <div class="flex items-center gap-2">
+            <span class="font-bold uppercase tracking-wider" id="role-badge-text">PROFESSOR</span>
+            <span class="text-blue-300">•</span>
+            <span id="role-desc-text">Acesso total para validação, avaliação pedagógica e despacho de recomendações.</span>
+        </div>
+        <span class="text-blue-500 font-mono text-[11px]">Sessão Segura Anônima</span>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-8">
+
+        <!-- 1. PIPELINE VISUAL (4 ETAPAS) -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <span>📌 Pipeline de Estados do Processo</span>
+                        <span class="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-semibold" id="total-count-badge">0 itens</span>
+                    </h2>
+                    <p class="text-xs text-slate-500">Acompanhe a transição das atividades desde a coleta até o descarte programado (TTL).</p>
+                </div>
+            </div>
+
+            <!-- Grid de Cards do Pipeline -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- ETAPA 1: COLETA -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">1</span>
+                            <span id="count-stage-1" class="text-xs font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-100">0</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-sm mb-1">Coleta & Ingestão</h3>
+                        <p class="text-xs text-slate-500 mb-4 leading-relaxed">Entrada unificada de atividades via formulário ou upload com timestamp.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-medium">Papel: Aluno</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">Status: RECEBIDO</span>
+                        </div>
+                        <button onclick="openModal('coleta')" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm shadow-blue-500/20 flex items-center justify-center gap-1.5">
+                            <span>+ Nova Coleta / Submeter</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ETAPA 2: VALIDAÇÃO -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-amber-500"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 font-bold text-xs flex items-center justify-center">2</span>
+                            <span id="count-stage-2" class="text-xs font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md border border-amber-100">0</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-sm mb-1">Validação & Fila</h3>
+                        <p class="text-xs text-slate-500 mb-4 leading-relaxed">Associação de Hash ID anônimo, checagem de formato e indexação.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded font-medium">Papel: Sistema</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">Status: EM_VALIDACAO</span>
+                        </div>
+                        <button onclick="openFirstPendingModal(2)" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm shadow-amber-500/20 flex items-center justify-center gap-1.5">
+                            <span>⚡ Validar Dados & Hash ID</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ETAPA 3: ANÁLISE & DECISÃO -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-purple-500"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 font-bold text-xs flex items-center justify-center">3</span>
+                            <span id="count-stage-3" class="text-xs font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md border border-purple-100">0</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-sm mb-1">Análise & Decisão</h3>
+                        <p class="text-xs text-slate-500 mb-4 leading-relaxed">Avaliação do professor: Se nota &lt; 60 &rarr; Intervenção Pedagógica.</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-medium">Papel: Professor</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">Status: EM_ANALISE</span>
+                        </div>
+                        <button onclick="openFirstPendingModal(3)" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm shadow-purple-500/20 flex items-center justify-center gap-1.5">
+                            <span>🎯 Analisar Desempenho & Decidir</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ETAPA 4: DEVOLUTIVA -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center">4</span>
+                            <span id="count-stage-4" class="text-xs font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md border border-emerald-100">0</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-sm mb-1">Devolutiva & Retorno</h3>
+                        <p class="text-xs text-slate-500 mb-4 leading-relaxed">Disparo de feedback ao aluno e agendamento de descarte TTL (180 dias).</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-medium">Papel: Prof / Sis</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">Status: CONCLUIDO</span>
+                        </div>
+                        <button onclick="openFirstPendingModal(4)" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5">
+                            <span>🚀 Disparar Devolutiva & TTL</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 2. TABELA INTERATIVA DE ATIVIDADES EM TEMPO REAL -->
+        <section class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden space-y-0">
+            <!-- Barra de Filtros e Busca -->
+            <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <span>📋 Fila de Atividades Registradas</span>
+                    </h3>
+                </div>
+                
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <!-- Busca -->
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="search-input" oninput="renderTable()" placeholder="Buscar por Hash, Disciplina..." class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                    </div>
+
+                    <!-- Filtro por Etapa -->
+                    <select id="stage-filter" onchange="renderTable()" class="bg-white border border-slate-200 rounded-xl text-xs px-3 py-1.5 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        <option value="all">Todas as Etapas</option>
+                        <option value="1">Etapa 1: Coleta</option>
+                        <option value="2">Etapa 2: Validação</option>
+                        <option value="3">Etapa 3: Análise</option>
+                        <option value="4">Etapa 4: Devolutiva</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabela -->
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100/70 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-3 px-4">ID Registrado</th>
+                            <th class="py-3 px-4">Estudante (Hash Anon)</th>
+                            <th class="py-3 px-4">Disciplina / Canal</th>
+                            <th class="py-3 px-4">Etapa Atual</th>
+                            <th class="py-3 px-4">Status & Nota</th>
+                            <th class="py-3 px-4 text-right">Ações Rápidas de Transição</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activities-table-body" class="divide-y divide-slate-100 text-xs">
+                        <!-- Linhas geradas via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="empty-state" class="hidden p-8 text-center text-slate-400 text-xs">
+                Nenhuma atividade encontrada com os filtros aplicados.
+            </div>
+        </section>
+
+        <!-- 3. PAINÉIS INFERIORES: LOGS DE RASTREABILIDADE & MATRIZ RBAC -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- LOGS DE RASTREABILIDADE IMUTÁVEIS -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <span>📜 Audit Trail / Logs de Rastreabilidade</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        </h3>
+                        <p class="text-xs text-slate-500">Registro histórico imutável das transições de dados e ações.</p>
+                    </div>
+                    <button onclick="clearLogs()" class="text-[11px] text-slate-400 hover:text-slate-600 underline">Limpar Visualização</button>
+                </div>
+
+                <div id="logs-container" class="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                    <!-- Logs gerados via JS -->
+                </div>
+            </section>
+
+            <!-- MATRIZ DE PERMISSÕES (RBAC) E REGRAS DA LGPD -->
+            <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+                <div class="border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <span>🔒 Governança, RBAC & Retenção TTL</span>
+                    </h3>
+                    <p class="text-xs text-slate-500">Controle de acesso por papel pedagógico e ciclo de vida do dado.</p>
+                </div>
+
+                <!-- Tabela de Permissões -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase">
+                                <th class="py-1.5 px-2">Recurso / Entidade</th>
+                                <th class="py-1.5 px-2">Estudante</th>
+                                <th class="py-1.5 px-2">Professor</th>
+                                <th class="py-1.5 px-2">Coordenação</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-[11px]">
+                            <tr>
+                                <td class="py-2 px-2 font-mono font-medium text-slate-700">Submeter Atividade</td>
+                                <td class="py-2 px-2"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Permitido</span></td>
+                                <td class="py-2 px-2"><span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded">Apenas Ver</span></td>
+                                <td class="py-2 px-2"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Permitido</span></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-2 font-mono font-medium text-slate-700">Validar & Hash ID</td>
+                                <td class="py-2 px-2"><span class="bg-red-50 text-red-600 text-[10px] px-1.5 py-0.5 rounded font-bold">Bloqueado</span></td>
+                                <td class="py-2 px-2"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Permitido</span></td>
+                                <td class="py-2 px-2"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Permitido</span></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-2 font-mono font-medium text-slate-700">Decisão Pedagógica</td>
+                                <td class="py-2 px-2"><span class="bg-red-50 text-red-600 text-[10px] px-1.5 py-0.5 rounded font-bold">Bloqueado</span></td>
+                                <td class="py-2 px-2"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Permitido</span></td>
+                                <td class="py-2 px-2"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Permitido</span></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-2 font-mono font-medium text-slate-700">Acesso a Logs / Purge</td>
+                                <td class="py-2 px-2"><span class="bg-red-50 text-red-600 text-[10px] px-1.5 py-0.5 rounded font-bold">Bloqueado</span></td>
+                                <td class="py-2 px-2"><span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded">Apenas Ver</span></td>
+                                <td class="py-2 px-2"><span class="bg-purple-100 text-purple-800 text-[10px] px-1.5 py-0.5 rounded font-bold">Total (Admin)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-[11px] text-amber-900 flex items-start gap-2">
+                    <span class="text-amber-600 text-sm">💡</span>
+                    <div>
+                        <strong>Política de Privacidade & TTL (Time-To-Live):</strong>
+                        Os dados pessoais reais dos estudantes são convertidos em Hash Anônimo na Etapa 2. Após a conclusão e devolutiva (Etapa 4), a política de expiração automática agenda o expurgo completo dos arquivos em **180 dias**.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+        <p>Sistema de Gestão - Fluxo Administrativo-Pedagógico • Desenvolvido para Simulação de Engenharia de Software</p>
+    </footer>
+
+    <!-- CONTAINER DE MODAIS DINÂMICOS -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        
+        <!-- MODAL 1: COLETA & INGESTÃO -->
+        <div id="modal-coleta" class="modal-card bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden hidden transform transition-all">
+            <div class="bg-blue-600 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Etapa 1: Nova Coleta / Submeter Atividade</h3>
+                    <p class="text-xs text-blue-100">Ingestão unificada no sistema administrativo-pedagógico</p>
+                </div>
+                <button onclick="closeModal()" class="text-blue-200 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <form onsubmit="handleColetaSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Estudante (Atribuído a Hash Anônimo)</label>
+                    <input type="text" id="coleta-nome" required placeholder="Ex: Carlos Educação" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Disciplina / Unidade</label>
+                        <select id="coleta-disciplina" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option>Algoritmos & Programação</option>
+                            <option>Gestão Pedagógica</option>
+                            <option>Estrutura de Dados</option>
+                            <option>Metodologias Ativas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Canal de Origem</label>
+                        <select id="coleta-canal" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option>Ambiente Virtual (AVA)</option>
+                            <option>Upload PDF / Documento</option>
+                            <option>Formulário Web</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nome do Arquivo ou Link da Entrega</label>
+                    <input type="text" id="coleta-arquivo" required placeholder="Ex: atividade_pratica_v1.pdf" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/20">Registrar Ingestão ➔</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- MODAL 2: VALIDAÇÃO DE DADOS -->
+        <div id="modal-validacao" class="modal-card bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden hidden transform transition-all">
+            <div class="bg-amber-600 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Etapa 2: Validação & Indexação de Hash</h3>
+                    <p class="text-xs text-amber-100">Garantia de anonimização e checagem de formato</p>
+                </div>
+                <button onclick="closeModal()" class="text-amber-200 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div id="validacao-details" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <!-- Detalhes injetados via JS -->
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-700">Verificação de Conformidade LGPD & Integridade:</label>
+                    <div class="space-y-1.5 text-xs text-slate-600">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" checked disabled class="rounded text-amber-600">
+                            <span>Hash ID único gerado imutável</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="chk-formato" checked class="rounded text-amber-600">
+                            <span>Formato de arquivo compatível (PDF/Doc)</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" id="chk-duplicidade" checked class="rounded text-amber-600">
+                            <span>Sem duplicidade detectada na turma</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button onclick="executeValidacao()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-amber-500/20">Validar & Avançar para Análise ➔</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 3: ANÁLISE & DECISÃO PEDAGÓGICA -->
+        <div id="modal-analise" class="modal-card bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden hidden transform transition-all">
+            <div class="bg-purple-600 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Etapa 3: Análise & Decisão Pedagógica</h3>
+                    <p class="text-xs text-purple-100">Avaliação contextualizada do professor</p>
+                </div>
+                <button onclick="closeModal()" class="text-purple-200 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div id="analise-details" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <!-- Detalhes injetados via JS -->
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nota / Pontuação (0 a 100)</label>
+                    <input type="number" id="analise-nota" min="0" max="100" value="75" oninput="updateDecisionPreview()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none font-bold">
+                </div>
+
+                <!-- Box de Decisão Lógica Automática -->
+                <div id="decision-preview-box" class="p-3 rounded-xl text-xs border transition-all">
+                    <!-- Injetado via JS -->
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Parecer do Professor / Observações Pedagógicas</label>
+                    <textarea id="analise-parecer" rows="3" placeholder="Insira aqui as orientações técnicas e feedback para o aluno..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button onclick="executeAnalise()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-purple-500/20">Gravar Decisão ➔</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 4: DEVOLUTIVA & DESTARTE (TTL) -->
+        <div id="modal-devolutiva" class="modal-card bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden hidden transform transition-all">
+            <div class="bg-emerald-600 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Etapa 4: Disparar Devolutiva & Política TTL</h3>
+                    <p class="text-xs text-emerald-100">Comunicação do feedback e expiração programada</p>
+                </div>
+                <button onclick="closeModal()" class="text-emerald-200 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div id="devolutiva-details" class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <!-- Detalhes injetados via JS -->
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Mensagem de Notificação para o Estudante</label>
+                    <textarea id="devolutiva-mensagem" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs space-y-2 text-emerald-900">
+                    <div class="font-bold flex items-center gap-1.5">
+                        <span>⏳ Programação de Expurgo (TTL / LGPD)</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-800">
+                        Após a notificação do estudante, o sistema manterá os registros para auditoria pedagógica pelo período configurado abaixo. Ao fim deste prazo, os arquivos serão eliminados permanentemente.
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <label class="font-bold">Prazo de Retenção:</label>
+                        <select id="devolutiva-ttl" class="bg-white border border-emerald-300 rounded-lg px-2 py-1 text-xs font-bold text-emerald-900">
+                            <option value="180">180 dias (Padrão Semestral)</option>
+                            <option value="90">90 dias (Padrão Trimestral)</option>
+                            <option value="30">30 dias (Acelerado)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                    <button onclick="executeDevolutiva()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-emerald-500/20">🚀 Concluir Processo & Notificar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DETALHES COMPLETOS -->
+        <div id="modal-detalhes" class="modal-card bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full overflow-hidden hidden transform transition-all">
+            <div class="bg-slate-800 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-base">Ficha do Registro de Atividade</h3>
+                    <p class="text-xs text-slate-300">Visualização completa dos dados e metadados</p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-6 space-y-4 text-xs" id="detalhes-body">
+                <!-- Conteúdo injetado via JS -->
+            </div>
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-100 flex justify-end">
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-semibold">Fechar Ficha</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT APLICAÇÃO -->
+    <script>
+        // ESTADO GLOBAL DA APLICAÇÃO
+        let appState = {
+            currentRole: 'Professor', // 'Estudante' | 'Professor' | 'Coordenação'
+            activeModalActivityId: null,
+            activities: [
+                {
+                    id: 'ACT-901',
+                    studentName: 'Ana Clara',
+                    studentHash: 'usr_7a8f9',
+                    subject: 'Algoritmos & Programação',
+                    channel: 'Ambiente Virtual (AVA)',
+                    file: 'projeto_algoritmos_v2.pdf',
+                    stage: 1,
+                    status: 'RECEBIDO',
+                    grade: null,
+                    parecer: '',
+                    devolutivaMsg: '',
+                    ttlDays: 180,
+                    createdAt: '2026-10-23 18:20'
+                },
+                {
+                    id: 'ACT-902',
+                    studentName: 'Bruno Costa',
+                    studentHash: 'usr_3b2c1',
+                    subject: 'Gestão Pedagógica',
+                    channel: 'Upload PDF / Documento',
+                    file: 'relatorio_gestao.pdf',
+                    stage: 2,
+                    status: 'EM_VALIDACAO',
+                    grade: null,
+                    parecer: '',
+                    devolutivaMsg: '',
+                    ttlDays: 180,
+                    createdAt: '2026-10-23 18:35'
+                },
+                {
+                    id: 'ACT-903',
+                    studentName: 'Carla Dias',
+                    studentHash: 'usr_9e8d7',
+                    subject: 'Estrutura de Dados',
+                    channel: 'Formulário Web',
+                    file: 'atividade_arvores.docx',
+                    stage: 3,
+                    status: 'EM_ANALISE',
+                    grade: 55,
+                    parecer: 'Apresentou dúvidas na implementação de árvores binárias.',
+                    devolutivaMsg: '',
+                    ttlDays: 180,
+                    createdAt: '2026-10-23 18:50'
+                },
+                {
+                    id: 'ACT-904',
+                    studentName: 'Daniel Faria',
+                    studentHash: 'usr_1f2e3',
+                    subject: 'Metodologias Ativas',
+                    channel: 'Ambiente Virtual (AVA)',
+                    file: 'plano_aula_interativo.pdf',
+                    stage: 4,
+                    status: 'APROVADO',
+                    grade: 92,
+                    parecer: 'Excelente proposta de ensino adaptativo.',
+                    devolutivaMsg: 'Parabéns! Sua proposta atendeu com excelência a todos os requisitos.',
+                    ttlDays: 180,
+                    createdAt: '2026-10-23 19:10'
+                }
+            ],
+            logs: []
+        };
+
+        // INICIALIZAÇÃO
+        window.addEventListener('DOMContentLoaded', () => {
+            setRole('Professor');
+            addLog('Sistema Inicializado', 'Painel administrativo carregado com sucesso.', 'info');
+            renderApp();
+        });
+
+        // ALTERAÇÃO DE PAPEL (RBAC)
+        function setRole(role) {
+            appState.currentRole = role;
+            
+            // Estilizar botões de papel
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-blue-700', 'shadow-sm', 'border', 'border-slate-200');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`btn-role-${role}`);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-white', 'text-blue-700', 'shadow-sm', 'border', 'border-slate-200');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            // Atualizar banner informativo
+            const roleBadge = document.getElementById('role-badge-text');
+            const roleDesc = document.getElementById('role-desc-text');
+            
+            if(role === 'Estudante') {
+                roleBadge.textContent = 'ESTUDANTE';
+                roleDesc.textContent = 'Acesso restrito para submeter atividades e visualizar devolutivas próprias.';
+            } else if(role === 'Professor') {
+                roleBadge.textContent = 'PROFESSOR';
+                roleDesc.textContent = 'Acesso total para validação de dados, avaliação pedagógica e envio de pareceres.';
+            } else if(role === 'Coordenação') {
+                roleBadge.textContent = 'COORDENAÇÃO';
+                roleDesc.textContent = 'Supervisão do pipeline, auditoria completa de logs e gerenciamento da retenção LGPD.';
+            }
+
+            addLog('Troca de Perfil RBAC', `Perfil alterado para: ${role}`, 'role');
+            renderTable();
+        }
+
+        // RENDERIZAÇÃO COMPLETA DA INTERFACE
+        function renderApp() {
+            renderCounters();
+            renderTable();
+            renderLogs();
+        }
+
+        // ATUALIZAÇÃO DOS CONTADORES DO PIPELINE
+        function renderCounters() {
+            const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
+            appState.activities.forEach(act => {
+                if(counts[act.stage] !== undefined) counts[act.stage]++;
+            });
+
+            document.getElementById('count-stage-1').textContent = counts[1];
+            document.getElementById('count-stage-2').textContent = counts[2];
+            document.getElementById('count-stage-3').textContent = counts[3];
+            document.getElementById('count-stage-4').textContent = counts[4];
+
+            document.getElementById('total-count-badge').textContent = `${appState.activities.length} registro(s)`;
+        }
+
+        // RENDERIZAÇÃO DA TABELA COM FILTROS
+        function renderTable() {
+            const tbody = document.getElementById('activities-table-body');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const stageVal = document.getElementById('stage-filter').value;
+            const emptyState = document.getElementById('empty-state');
+
+            tbody.innerHTML = '';
+
+            const filtered = appState.activities.filter(act => {
+                const matchesSearch = act.studentHash.toLowerCase().includes(searchVal) ||
+                                      act.subject.toLowerCase().includes(searchVal) ||
+                                      act.id.toLowerCase().includes(searchVal);
+                const matchesStage = stageVal === 'all' || act.stage.toString() === stageVal;
+                
+                // Se for Estudante, só mostra atividades de exemplo filtradas
+                return matchesSearch && matchesStage;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(act => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition-colors';
+
+                // Badges de Status
+                let statusBadge = '';
+                if(act.status === 'RECEBIDO') statusBadge = '<span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded-full font-bold">RECEBIDO</span>';
+                else if(act.status === 'EM_VALIDACAO') statusBadge = '<span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">EM VALIDAÇÃO</span>';
+                else if(act.status === 'EM_ANALISE') statusBadge = '<span class="bg-purple-100 text-purple-800 text-[10px] px-2 py-0.5 rounded-full font-bold">EM ANÁLISE</span>';
+                else if(act.status === 'APROVADO') statusBadge = '<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">✅ APROVADO</span>';
+                else if(act.status === 'INTERVENCAO') statusBadge = '<span class="bg-amber-100 text-amber-900 text-[10px] px-2 py-0.5 rounded-full font-bold">⚠️ INTERVENÇÃO</span>';
+
+                // Render de Nota se houver
+                const gradeDisplay = act.grade !== null ? `<span class="ml-1 font-mono font-bold text-slate-700">(${act.grade}/100)</span>` : '';
+
+                // Nome do estudante omitido em visualização padrão do professor para simular anonimização
+                const displayName = appState.currentRole === 'Estudante' ? act.studentName : `Anonimizado (${act.studentHash})`;
+
+                // Botão de Ação rápido
+                let actionBtn = '';
+                if(appState.currentRole === 'Estudante') {
+                    actionBtn = `<button onclick="openModalDetails('${act.id}')" class="text-blue-600 hover:text-blue-800 font-semibold text-[11px] underline">Ver Status</button>`;
+                } else {
+                    if(act.stage === 1) {
+                        actionBtn = `<button onclick="openModalForActivity('validacao', '${act.id}')" class="bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all">Validar ➔</button>`;
+                    } else if(act.stage === 2) {
+                        actionBtn = `<button onclick="openModalForActivity('analise', '${act.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all">Analisar ➔</button>`;
+                    } else if(act.stage === 3) {
+                        actionBtn = `<button onclick="openModalForActivity('devolutiva', '${act.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all">Devolutiva ➔</button>`;
+                    } else {
+                        actionBtn = `<span class="text-emerald-600 font-bold text-[11px]">Concluído (${act.ttlDays}d TTL)</span>`;
+                    }
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-mono font-bold text-slate-700">${act.id}</td>
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-slate-900">${displayName}</div>
+                        <div class="text-[10px] text-slate-400 font-mono">${act.studentHash}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="font-medium text-slate-800">${act.subject}</div>
+                        <div class="text-[10px] text-slate-400">${act.channel}</div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="font-medium text-slate-700">Etapa ${act.stage}</span>
+                    </td>
+                    <td class="py-3 px-4">
+                        <div class="flex items-center gap-1">${statusBadge} ${gradeDisplay}</div>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            ${actionBtn}
+                            <button onclick="openModalDetails('${act.id}')" class="text-slate-400 hover:text-slate-600 p-1 rounded" title="Ver Detalhes">🔍</button>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            renderCounters();
+        }
+
+        // Mapeamento e Abertura de Modais Dinâmicos
+        function openModal(type) {
+            closeModal();
+            document.getElementById('modal-backdrop').classList.remove('hidden');
+            const targetModal = document.getElementById(`modal-${type}`);
+            if(targetModal) targetModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-backdrop').classList.add('hidden');
+            document.querySelectorAll('.modal-card').forEach(m => m.classList.add('hidden'));
+            appState.activeModalActivityId = null;
+        }
+
+        function openFirstPendingModal(stage) {
+            const pending = appState.activities.find(a => a.stage === stage);
+            if(!pending) {
+                alert(`Não há atividades pendentes na Etapa ${stage}.`);
+                return;
+            }
+            
+            const modalTypes = { 2: 'validacao', 3: 'analise', 4: 'devolutiva' };
+            openModalForActivity(modalTypes[stage], pending.id);
+        }
+
+        function openModalForActivity(modalType, activityId) {
+            const act = appState.activities.find(a => a.id === activityId);
+            if(!act) return;
+
+            // Bloqueio RBAC básico para Estudante
+            if(appState.currentRole === 'Estudante' && modalType !== 'coleta') {
+                alert('Acesso Restrito: O perfil "Estudante" só pode realizar a inclusão de atividades.');
+                return;
+            }
+
+            appState.activeModalActivityId = activityId;
+
+            if(modalType === 'validacao') {
+                document.getElementById('validacao-details').innerHTML = `
+                    <p><strong>Registro:</strong> ${act.id} | <strong>Disciplina:</strong> ${act.subject}</p>
+                    <p><strong>Hash do Estudante:</strong> <code class="bg-amber-100 px-1 py-0.5 rounded text-amber-900">${act.studentHash}</code></p>
+                    <p><strong>Arquivo Entregue:</strong> ${act.file}</p>
+                `;
+            } else if(modalType === 'analise') {
+                document.getElementById('analise-details').innerHTML = `
+                    <p><strong>Registro:</strong> ${act.id} | <strong>Hash:</strong> <code>${act.studentHash}</code></p>
+                    <p><strong>Arquivo:</strong> ${act.file}</p>
+                `;
+                document.getElementById('analise-nota').value = act.grade || 75;
+                document.getElementById('analise-parecer').value = act.parecer || '';
+                updateDecisionPreview();
+            } else if(modalType === 'devolutiva') {
+                document.getElementById('devolutiva-details').innerHTML = `
+                    <p><strong>Registro:</strong> ${act.id} | <strong>Status:</strong> ${act.status}</p>
+                    <p><strong>Nota Atribuída:</strong> ${act.grade !== null ? act.grade + '/100' : 'N/A'}</p>
+                `;
+                
+                const defaultMsg = act.status === 'INTERVENCAO'
+                    ? `Olá! Identificamos pontos de atenção na sua entrega. Recomendamos o agendamento de tutoria de reforço pedagógico.`
+                    : `Olá! Sua atividade foi avaliada e aprovada com sucesso. Parabéns pelo desempenho!`;
+                
+                document.getElementById('devolutiva-mensagem').value = defaultMsg;
+            }
+
+            openModal(modalType);
+        }
+
+        function openModalDetails(activityId) {
+            const act = appState.activities.find(a => a.id === activityId);
+            if(!act) return;
+
+            document.getElementById('detalhes-body').innerHTML = `
+                <div class="space-y-3">
+                    <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
+                        <div class="text-[10px] text-slate-500 font-bold uppercase">Identificadores do Sistema</div>
+                        <div class="text-sm font-bold text-slate-800">${act.id}</div>
+                        <div class="font-mono text-blue-600 text-xs">Hash LGPD: ${act.studentHash}</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-slate-400">Estudante:</span>
+                            <div class="font-semibold text-slate-800">${appState.currentRole === 'Estudante' ? act.studentName : 'Anonimizado'}</div>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Disciplina:</span>
+                            <div class="font-semibold text-slate-800">${act.subject}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-slate-400">Canal de Origem:</span>
+                            <div class="font-semibold text-slate-800">${act.channel}</div>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Arquivo / Payload:</span>
+                            <div class="font-mono text-slate-700">${act.file}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-2 grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-slate-400">Etapa Atual:</span>
+                            <div class="font-bold text-slate-800">Etapa ${act.stage}</div>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Status Lógico:</span>
+                            <div class="font-bold text-blue-600">${act.status}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-2">
+                        <span class="text-slate-400">Nota / Parecer Pedagógico:</span>
+                        <div class="font-semibold text-slate-800">${act.grade !== null ? act.grade + '/100' : 'Ainda não avaliado'}</div>
+                        <div class="text-slate-600 italic mt-1 bg-slate-50 p-2 rounded">${act.parecer || 'Sem observações registrados.'}</div>
+                    </div>
+
+                    <div class="bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-emerald-900 text-[11px]">
+                        <strong>Retenção Programada (TTL):</strong> ${act.ttlDays} dias após a conclusão.
+                    </div>
+                </div>
+            `;
+
+            openModal('detalhes');
+        }
+
+        // REGRAS DE LÓGICA E SUBMISSÕES
+
+        // Submeter Etapa 1: Coleta
+        function handleColetaSubmit(event) {
+            event.preventDefault();
+            
+            const nome = document.getElementById('coleta-nome').value;
+            const disciplina = document.getElementById('coleta-disciplina').value;
+            const canal = document.getElementById('coleta-canal').value;
+            const arquivo = document.getElementById('coleta-arquivo').value;
+
+            // Gera Hash único para privacidade
+            const hashId = 'usr_' + Math.random().toString(36).substring(2, 7);
+            const newId = 'ACT-' + (900 + appState.activities.length + 1);
+
+            const newActivity = {
+                id: newId,
+                studentName: nome,
+                studentHash: hashId,
+                subject: disciplina,
+                channel: canal,
+                file: arquivo,
+                stage: 1,
+                status: 'RECEBIDO',
+                grade: null,
+                parecer: '',
+                devolutivaMsg: '',
+                ttlDays: 180,
+                createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+            };
+
+            appState.activities.unshift(newActivity);
+            addLog('Etapa 1: Ingestão de Atividade', `Atividade ${newId} recebida via ${canal}. Hash gerado: ${hashId}`, 'success');
+
+            closeModal();
+            renderTable();
+        }
+
+        // Executar Etapa 2: Validação
+        function executeValidacao() {
+            const act = appState.activities.find(a => a.id === appState.activeModalActivityId);
+            if(!act) return;
+
+            act.stage = 2;
+            act.status = 'EM_VALIDACAO';
+
+            // Avança para fila da Etapa 3
+            act.stage = 3;
+            act.status = 'EM_ANALISE';
+
+            addLog('Etapa 2: Validação Concluída', `Registro ${act.id} validado e anonimizado (${act.studentHash}). Enviado para fila do professor.`, 'info');
+
+            closeModal();
+            renderTable();
+        }
+
+        // Atualizar Decisão Pedagógica em Tempo Real (Nota < 60)
+        function updateDecisionPreview() {
+            const nota = parseInt(document.getElementById('analise-nota').value) || 0;
+            const box = document.getElementById('decision-preview-box');
+
+            if(nota < 60) {
+                box.className = 'p-3 rounded-xl text-xs border bg-amber-50 border-amber-200 text-amber-900';
+                box.innerHTML = `
+                    <div class="font-bold flex items-center gap-1 text-amber-700">⚠️ Recomendação: Intervenção Pedagógica</div>
+                    <div>Nota ${nota} abaixo da meta (60). O fluxo será direcionado para plano de reforço e tutoria.</div>
+                `;
+            } else {
+                box.className = 'p-3 rounded-xl text-xs border bg-emerald-50 border-emerald-200 text-emerald-900';
+                box.innerHTML = `
+                    <div class="font-bold flex items-center gap-1 text-emerald-700">✅ Recomendação: Aprovação Direta</div>
+                    <div>Nota ${nota} atinge o critério mínimo. O fluxo será preparado para devolutiva positiva.</div>
+                `;
+            }
+        }
+
+        // Executar Etapa 3: Análise
+        function executeAnalise() {
+            const act = appState.activities.find(a => a.id === appState.activeModalActivityId);
+            if(!act) return;
+
+            const nota = parseInt(document.getElementById('analise-nota').value) || 0;
+            const parecer = document.getElementById('analise-parecer').value;
+
+            act.grade = nota;
+            act.parecer = parecer;
+
+            // Regra de Negócio: Se nota < 60 -> Intervenção Pedagógica
+            if(nota < 60) {
+                act.status = 'INTERVENCAO';
+            } else {
+                act.status = 'APROVADO';
+            }
+
+            // Avança para a Etapa 4
+            act.stage = 4;
+
+            addLog('Etapa 3: Análise & Decisão', `Avaliação de ${act.id}: Nota ${nota}. Status atualizado para: ${act.status}`, 'warning');
+
+            closeModal();
+            renderTable();
+        }
+
+        // Executar Etapa 4: Devolutiva
+        function executeDevolutiva() {
+            const act = appState.activities.find(a => a.id === appState.activeModalActivityId);
+            if(!act) return;
+
+            const msg = document.getElementById('devolutiva-mensagem').value;
+            const ttl = parseInt(document.getElementById('devolutiva-ttl').value);
+
+            act.devolutivaMsg = msg;
+            act.ttlDays = ttl;
+
+            addLog('Etapa 4: Devolutiva & TTL', `Devolutiva enviada para ${act.studentHash}. Expurgo automático programado em ${ttl} dias.`, 'success');
+
+            closeModal();
+            renderTable();
+        }
+
+        // GERENCIAMENTO DE LOGS
+        function addLog(title, desc, type) {
+            const time = new Date().toLocaleTimeString();
+            const logEntry = { title, desc, type, time, user: appState.currentRole };
+            appState.logs.unshift(logEntry);
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('logs-container');
+            if(!container) return;
+
+            container.innerHTML = '';
+            appState.logs.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'p-2 rounded-xl bg-slate-50 border border-slate-200/60 text-xs flex items-start gap-2';
+
+                let icon = '📌';
+                if(log.type === 'success') icon = '✅';
+                if(log.type === 'warning') icon = '⚠️';
+                if(log.type === 'role') icon = '🔄';
+
+                div.innerHTML = `
+                    <span class="text-sm">${icon}</span>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-800">${log.title}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${log.time} [${log.user}]</span>
+                        </div>
+                        <div class="text-slate-600 text-[11px] mt-0.5">${log.desc}</div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function clearLogs() {
+            appState.logs = [];
+            renderLogs();
+        }
+    </script>
+</body>
+</html>
